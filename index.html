@@ -78,7 +78,7 @@ body{
   z-index:1;
 }
 
-/* Fondo interactivo */
+/* Fondo interactivo (VIDEO) */
 .bg{
   position:fixed;
   inset:0;
@@ -101,11 +101,14 @@ body{
 .bg-zoom{
   position:absolute;
   inset:0;
-  background-image:var(--bg-img,radial-gradient(60% 38% at 12% 0%,rgba(233,197,100,.30),transparent 70%));
-  background-size:cover;
-  background-position:50% 12%;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:50% 12%;
   transform-origin:50% 12%;
   animation:breathe 22s ease-in-out infinite alternate;
+  /* Sube a 2px o 4px si lo quieres más borroso */
+  filter:blur(0px);
 }
 
 @keyframes breathe{
@@ -502,7 +505,9 @@ footer a{
 
 <div class="bg" aria-hidden="true">
   <div class="bg-move" id="bgMove">
-    <div class="bg-zoom"></div>
+    <video class="bg-zoom" id="bgVideo" autoplay muted loop playsinline preload="auto" poster="Fondo.png">
+      <source src="video.mp4" type="video/mp4">
+    </video>
   </div>
 </div>
 
@@ -526,11 +531,8 @@ const CONFIG = {
 
   logo: "logo.svg",
 
-  /* FONDO */
-  fondoImagen: "Fondo.png",
-  fondoOpacidad: "0.5",
-  fondoX: 50,
-  fondoY: 15,
+  /* FONDO (video: video.mp4) */
+  fondoOpacidad: "0.7",
 
   telefono: "+51961626778",
   whatsapp: "51961626778",
@@ -618,41 +620,31 @@ const vc = s => String(s || "").replace(/([,;\\])/g, "\\$1").replace(/\n/g, "\\n
 const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 
 
-const q = new URLSearchParams(location.search);
-
-const fx = clamp(Number(q.get("x") ?? c.fondoX) || 0, 0, 100);
-const fy = clamp(Number(q.get("y") ?? c.fondoY) || 0, 0, 100);
-
-root.style.setProperty("--bg-pos", `${fx}% ${fy}%`);
-
-
+/* ===== FONDO CON VIDEO ===== */
 const move = document.getElementById("bgMove");
+const vid = document.getElementById("bgVideo");
 
-if (c.fondoImagen) {
+move.style.opacity = 0;
 
-  move.style.opacity = 0;
+let bgListo = false;
 
-  const url = c.fondoImagen.replace(/"/g, "");
+const showBg = () => {
+  if (bgListo) return;
+  bgListo = true;
+  root.classList.add("has-bg");           // tarjetas translúcidas
+  move.style.opacity = c.fondoOpacidad;   // mismo difuminado de antes
+};
 
-  const probe = new Image();
+if (vid.readyState >= 3) showBg();
+else vid.addEventListener("canplay", showBg, { once: true });
 
-  probe.onload = () => {
+// Si el video falla, igual se muestra el poster (Fondo.png)
+vid.querySelector("source").addEventListener("error", showBg);
 
-    root.style.setProperty("--bg-img", `url("${url}")`);
+// Respaldo: si el navegador no dispara eventos (ahorro de batería), mostrar igual
+setTimeout(showBg, 1500);
 
-    root.classList.add("has-bg");
-
-    move.style.opacity = c.fondoOpacidad;
-
-  };
-
-  probe.onerror = () => {
-    move.style.opacity = 1;
-  };
-
-  probe.src = url;
-
-}
+vid.play().catch(() => {});
 
 
 document.title = `${c.nombreNegocio} - ${c.doctor}`;
@@ -736,7 +728,7 @@ function render() {
 
     <h3>${I.clock}Disponibilidad</h3>
 
-    <p>Atención odontológica previa cita o emergencias las 24 horas del día, los 7 días de la semana.</p>
+    <p>Atención odontológica previa cita o urgencias las 24 horas del día, los 7 días de la semana.</p>
 
   </section>
 
@@ -936,6 +928,8 @@ function aviso(msg) {
 
 
 const sinMovimiento = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+if (sinMovimiento) vid.pause();
 
 let tx = 0, ty = 0, cx = 0, cy = 0, running = false;
 
