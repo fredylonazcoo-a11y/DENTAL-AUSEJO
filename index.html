@@ -341,13 +341,14 @@ header{
 }
 
 .chip{
-  border:0;
+  border:1px solid rgba(233,197,100,.7);
   border-radius:99px;
   padding:9px 16px;
   font-size:14px;
   font-weight:600;
-  background:rgba(233,197,100,.25);
-  color:var(--ink);
+  background:linear-gradient(135deg,#F3D98B,#E9C564 55%,#D4AA3F);
+  color:#3d2e05;
+  box-shadow:0 2px 8px rgba(233,197,100,.35);
 }
 
 .location-item{
@@ -559,15 +560,16 @@ const CONFIG = {
       mapaUrl: "https://share.google/BXWKK8myO3wqLt4vn"
     }
 
-  ],
+  ],  
 
-  servicios: [
-    "Sedación en niños",
+    servicios: [
     "Implantes dentales",
     "Prótesis dentales",
     "Endodoncias",
     "Ortodoncias",
-    "Odontología integral"
+    "Cirugía bucal",
+    "Odontología integral",
+    "Relajación dental en niños (Sedación consciente)"
   ],
 
   horarioTexto: "Atención 24/7 (previa cita)",
@@ -735,7 +737,7 @@ function render() {
 
   <section class="panel glass">
 
-    <h3>Tratamientos y especialidades</h3>
+    <h3>Tratamientos personalizados</h3>
 
     <div class="chips">${c.servicios.map(s => `<span class="chip">${esc(s)}</span>`).join("")}</div>
 
